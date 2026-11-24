@@ -1,10 +1,14 @@
-import express, {
-  type NextFunction,
-  type Request,
-  type Response,
-} from "express";
+import express, { type Request, type Response } from "express";
 import { GoogleGenAI } from "@google/genai";
 import { products, type Product } from "./products.js";
+import {
+  ModelIdsSchema,
+  PromptBodySchema,
+  PromptResponseSchema,
+  SearchBodySchema,
+  SearchResponseSchema,
+  formatIssues,
+} from "./schemas.js";
 
 process.loadEnvFile();
 
@@ -30,12 +34,17 @@ async function generateWithGemini(prompt: string): Promise<string | undefined> {
   return interaction.output_text;
 }
 
-app.post("/", async (req: Request, res: Response, next: NextFunction) => {
+app.post("/", async (req: Request, res: Response) => {
+  const body = PromptBodySchema.safeParse(req.body);
+  if (!body.success) {
+    res.status(400).json({ error: "Invalid request body", issues: formatIssues(body.error) });
+    return;
+  }
   try {
-    const prompt: string = req.body.prompt;
-    const result = await generateWithGemini(prompt);
-    res.json({ result: result });
+    const result = await generateWithGemini(body.data.prompt);
+    res.json(PromptResponseSchema.parse({ result }));
   } catch (err) {
+    console.error("Prompt request failed:", err instanceof Error ? err.message : err);
     res.status(500).json({ error: "Request failed" });
   }
 });
@@ -43,9 +52,7 @@ app.post("/", async (req: Request, res: Response, next: NextFunction) => {
 function parseIds(text: string | undefined): number[] {
   const match = text?.match(/\[[\s\S]*\]/);
   if (!match) throw new Error("Model did not return a JSON array");
-  const parsed: unknown = JSON.parse(match[0]);
-  if (!Array.isArray(parsed)) throw new Error("Model output is not an array");
-  return parsed.filter((id): id is number => typeof id === "number");
+  return ModelIdsSchema.parse(JSON.parse(match[0]));
 }
 
 async function searchProducts(query: string): Promise<Product[]> {
@@ -74,13 +81,15 @@ app.get("/products", (_req: Request, res: Response) => {
 });
 
 app.post("/products/search", async (req: Request, res: Response) => {
-  const query: unknown = req.body?.query;
-  if (typeof query !== "string" || query.trim() === "") {
-    res.status(400).json({ error: "Body must include a non-empty `query` string" });
+  const body = SearchBodySchema.safeParse(req.body);
+  if (!body.success) {
+    res.status(400).json({ error: "Invalid request body", issues: formatIssues(body.error) });
     return;
   }
+  const { query } = body.data;
   try {
-    res.json({ query, products: await searchProducts(query) });
+    const found = await searchProducts(query);
+    res.json(SearchResponseSchema.parse({ query, products: found }));
   } catch (err) {
     console.error(
       "Product search failed:",

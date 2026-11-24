@@ -1,13 +1,10 @@
-export interface Product {
-  id: number;
-  name: string;
-  category: string;
-  price: number;
-  rating: number;
-  inStock: boolean;
-}
+import { z } from "zod";
+import { ProductSchema, type Product } from "./schemas.js";
 
-export const products: Product[] = [
+export type { Product };
+
+// Validated once at load, so a typo in the catalog fails fast at startup.
+export const products: Product[] = z.array(ProductSchema).parse([
   { id: 1, name: "UltraBook Pro 14", category: "laptops", price: 1299.99, rating: 4.7, inStock: true },
   { id: 2, name: "BudgetBook 15", category: "laptops", price: 449.0, rating: 3.9, inStock: true },
   { id: 3, name: "GameStation X", category: "laptops", price: 1899.5, rating: 4.8, inStock: false },
@@ -23,4 +20,4 @@ export const products: Product[] = [
   { id: 13, name: "SnapCam 4K Webcam", category: "accessories", price: 79.0, rating: 4.1, inStock: true },
   { id: 14, name: "Vision 27 Monitor", category: "monitors", price: 329.0, rating: 4.5, inStock: true },
   { id: 15, name: "Vision 32 Curved Monitor", category: "monitors", price: 549.0, rating: 4.7, inStock: true },
-];
+]);
