@@ -12,38 +12,21 @@ export const ProductSchema = z.object({
 });
 export type Product = z.infer<typeof ProductSchema>;
 
-// ---- Request bodies (input) ------------------------------------------------
-
-export const PromptBodySchema = z.object({
-  prompt: z.string().trim().min(1, "`prompt` must not be empty").max(10_000),
-});
+// ---- Request body (input) --------------------------------------------------
 
 export const SearchBodySchema = z.object({
   query: z.string().trim().min(1, "`query` must not be empty").max(500),
 });
+export type SearchBody = z.infer<typeof SearchBodySchema>;
 
 // ---- Model output (untrusted) ----------------------------------------------
 
 // The model is asked for a bare JSON array of product ids.
 export const ModelIdsSchema = z.array(z.number().int());
 
-// ---- Response bodies (output) ----------------------------------------------
-
-export const PromptResponseSchema = z.object({
-  result: z.string(),
-});
+// ---- Response body (output) ------------------------------------------------
 
 export const SearchResponseSchema = z.object({
   query: z.string(),
   products: z.array(ProductSchema),
 });
-
-// ---- Helpers ---------------------------------------------------------------
-
-/** Compact, client-safe view of a ZodError: `[{ path: "query", message }]`. */
-export function formatIssues(error: z.ZodError) {
-  return error.issues.map((issue) => ({
-    path: issue.path.join("."),
-    message: issue.message,
-  }));
-}

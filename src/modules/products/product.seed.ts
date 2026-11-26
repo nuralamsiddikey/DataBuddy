@@ -1,10 +1,9 @@
 import { z } from "zod";
-import { ProductSchema, type Product } from "./schemas.js";
-
-export type { Product };
+import { ProductModel } from "./product.model.js";
+import { ProductSchema, type Product } from "./product.schema.js";
 
 // Validated once at load, so a typo in the catalog fails fast at startup.
-export const products: Product[] = z.array(ProductSchema).parse([
+export const productSeedData: Product[] = z.array(ProductSchema).parse([
   { id: 1, name: "UltraBook Pro 14", category: "laptops", price: 1299.99, rating: 4.7, inStock: true },
   { id: 2, name: "BudgetBook 15", category: "laptops", price: 449.0, rating: 3.9, inStock: true },
   { id: 3, name: "GameStation X", category: "laptops", price: 1899.5, rating: 4.8, inStock: false },
@@ -21,3 +20,12 @@ export const products: Product[] = z.array(ProductSchema).parse([
   { id: 14, name: "Vision 27 Monitor", category: "monitors", price: 329.0, rating: 4.5, inStock: true },
   { id: 15, name: "Vision 32 Curved Monitor", category: "monitors", price: 549.0, rating: 4.7, inStock: true },
 ]);
+
+/** Inserts the starter catalog when the collection is empty. Safe to call on every startup. */
+export async function seedProductsIfEmpty(): Promise<void> {
+  await ProductModel.init(); // wait for the unique index on `id` to be built
+  if ((await ProductModel.estimatedDocumentCount()) > 0) return;
+
+  await ProductModel.insertMany(productSeedData);
+  console.log(`Seeded ${productSeedData.length} products`);
+}
