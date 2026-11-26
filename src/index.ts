@@ -1,6 +1,8 @@
 import express, { type Request, type Response } from "express";
 import { GoogleGenAI } from "@google/genai";
-import { products, type Product } from "./products.js";
+import { type Product } from "./products.js";
+import { closeDb, connectDb } from "./db.js";
+import { ProductModel } from "./models.js";
 import {
   ModelIdsSchema,
   PromptBodySchema,
@@ -34,20 +36,7 @@ async function generateWithGemini(prompt: string): Promise<string | undefined> {
   return interaction.output_text;
 }
 
-app.post("/", async (req: Request, res: Response) => {
-  const body = PromptBodySchema.safeParse(req.body);
-  if (!body.success) {
-    res.status(400).json({ error: "Invalid request body", issues: formatIssues(body.error) });
-    return;
-  }
-  try {
-    const result = await generateWithGemini(body.data.prompt);
-    res.json(PromptResponseSchema.parse({ result }));
-  } catch (err) {
-    console.error("Prompt request failed:", err instanceof Error ? err.message : err);
-    res.status(500).json({ error: "Request failed" });
-  }
-});
+
 
 function parseIds(text: string | undefined): number[] {
   const match = text?.match(/\[[\s\S]*\]/);
@@ -56,6 +45,8 @@ function parseIds(text: string | undefined): number[] {
 }
 
 async function searchProducts(query: string): Promise<Product[]> {
+  const products = await ProductModel.find({}, { _id: 0 }).sort({ id: 1 }).lean<Product[]>();
+
   const prompt = [
     "You are a product search engine. Here is the full product catalog as JSON:",
     JSON.stringify(products),
@@ -76,9 +67,6 @@ async function searchProducts(query: string): Promise<Product[]> {
   });
 }
 
-app.get("/products", (_req: Request, res: Response) => {
-  res.json({ products });
-});
 
 app.post("/products/search", async (req: Request, res: Response) => {
   const body = SearchBodySchema.safeParse(req.body);
@@ -99,12 +87,25 @@ app.post("/products/search", async (req: Request, res: Response) => {
   }
 });
 
+
+
+
+try {
+  await connectDb();
+} catch (err) {
+  console.error("Failed to connect to MongoDB:", err instanceof Error ? err.message : err);
+  process.exit(1);
+}
+
 const server = app.listen(port, () => {
   console.log(`Server listening on http://localhost:${port}`);
 });
 
 for (const signal of ["SIGINT", "SIGTERM"] as const) {
   process.on(signal, () => {
-    server.close(() => process.exit(0));
+    server.close(async () => {
+      await closeDb();
+      process.exit(0);
+    });
   });
 }
