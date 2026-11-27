@@ -7,7 +7,8 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "typecheck": "tsc --noEmit",
-    "seed": "tsx src/scripts/seed.ts"
+    "seed": "tsx src/scripts/seed.ts",
+    "seed:orders": "tsx src/scripts/seed-orders.ts"
   },
   "keywords": [],
   "author": "",

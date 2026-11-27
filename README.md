@@ -24,6 +24,7 @@ Seed the product catalog with `npm run seed` (it is no longer seeded automatical
 | `npm start`         | Run the compiled build                       |
 | `npm run typecheck` | Type-check without emitting                  |
 | `npm run seed`      | Upsert the 1000-product catalog (`-- --reset` clears products first) |
+| `npm run seed:orders` | Upsert 1000 orders built from the products in the DB (`-- --reset` clears orders first) |
 
 ### Configuration
 
@@ -71,17 +72,20 @@ src/
 ├── routes/
 │   └── index.ts         Mounts each module's router
 ├── scripts/
-│   └── seed.ts          `npm run seed`: insert / refresh the 1000-product catalog
+│   ├── seed.ts          `npm run seed`: insert / refresh the 1000-product catalog
+│   └── seed-orders.ts   `npm run seed:orders`: insert / refresh 1000 orders from the products in the DB
 ├── utils/
 │   └── errors.ts        HttpError
-└── modules/
-    └── products/        One folder per feature
-        ├── product.schema.ts      Zod schemas and types
-        ├── product.model.ts       Mongoose model
-        ├── product.seed.ts        Starter catalog and seeding
-        ├── product.service.ts     Business logic (search)
-        ├── product.controller.ts  HTTP handlers
-        └── product.routes.ts      Route definitions
+└── modules/             One folder per feature
+    ├── products/
+    │   ├── product.schema.ts      Zod schemas and types
+    │   ├── product.model.ts       Mongoose model
+    │   ├── product.service.ts     Business logic (search)
+    │   ├── product.controller.ts  HTTP handlers
+    │   └── product.routes.ts      Route definitions
+    └── orders/
+        ├── order.schema.ts        Zod schemas and types
+        └── order.model.ts         Mongoose model
 ```
 
 New features go in their own folder under `src/modules/` and get mounted in `src/routes/index.ts`.

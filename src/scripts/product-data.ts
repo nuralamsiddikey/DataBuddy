@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { ProductSchema, type Product } from "../modules/products/product.schema.js";
+import { createRandom } from "./random.js";
 
 export const TOTAL_PRODUCTS = 1000;
 
@@ -67,19 +68,6 @@ const CATEGORIES: Record<string, CategorySpec> = {
     maxPrice: 1299,
   },
 };
-
-// Small seeded PRNG (mulberry32): the same seed always yields the same catalog,
-// so re-running the seed script is idempotent.
-function createRandom(seed: number): () => number {
-  let state = seed >>> 0;
-  return () => {
-    state = (state + 0x6d2b79f5) >>> 0;
-    let t = state;
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
 
 function generateProducts(startId: number, count: number, takenNames: Set<string>): Product[] {
   const random = createRandom(20260101);
