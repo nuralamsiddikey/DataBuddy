@@ -5,7 +5,8 @@ import type { Product } from "../modules/products/product.schema.js";
 import { TOTAL_ORDERS, generateOrders } from "./order-data.js";
 
 // Usage: npm run seed:orders [-- --reset]
-//   (default)  upsert 1000 orders by `id`, built from the products currently in the DB
+//   (default)  upsert 1000 orders by `id`, built from the products currently in the DB,
+//              dated over the 365 days up to now
 //   --reset    delete every order first, then insert them
 // Run `npm run seed` first so there are products to order.
 const reset = process.argv.includes("--reset");

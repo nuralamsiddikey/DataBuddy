@@ -5,9 +5,11 @@ import { createRandom } from "./random.js";
 
 export const TOTAL_ORDERS = 1000;
 
-// Fixed anchor (not Date.now) so the generated orders are identical on every run.
-const ANCHOR_DATE = Date.UTC(2026, 10, 27); // 2026-11-27
-const DAY_MS = 24 * 60 * 60 * 1000;
+const HOUR_MS = 60 * 60 * 1000;
+const DAY_MS = 24 * HOUR_MS;
+// Orders run up to "now" (rounded down to the hour) so analytics questions like "sales today" have data.
+// Everything except the dates is deterministic, and re-running within the same hour is a no-op.
+const ANCHOR_DATE = Math.floor(Date.now() / HOUR_MS) * HOUR_MS;
 const HISTORY_DAYS = 365;
 const CUSTOMER_POOL_SIZE = 150; // < TOTAL_ORDERS, so some customers order more than once
 
