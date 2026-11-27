@@ -1,11 +1,9 @@
 import { createApp } from "./app.js";
 import { env } from "./config/env.js";
 import { connectDb, disconnectDb } from "./db/connection.js";
-import { seedProductsIfEmpty } from "./modules/products/product.seed.js";
 
 async function main(): Promise<void> {
   await connectDb();
-  await seedProductsIfEmpty();
 
   const server = createApp().listen(env.PORT, () => {
     console.log(`Server listening on http://localhost:${env.PORT} (${env.NODE_ENV})`);

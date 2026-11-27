@@ -13,7 +13,7 @@ npm install
 npm run dev                 # http://localhost:3000
 ```
 
-The product catalog is seeded automatically on first start if the collection is empty.
+Seed the product catalog with `npm run seed` (it is no longer seeded automatically on server start).
 
 ### Scripts
 
@@ -23,6 +23,7 @@ The product catalog is seeded automatically on first start if the collection is 
 | `npm run build`     | Compile TypeScript to `dist/`                |
 | `npm start`         | Run the compiled build                       |
 | `npm run typecheck` | Type-check without emitting                  |
+| `npm run seed`      | Upsert the 1000-product catalog (`-- --reset` clears products first) |
 
 ### Configuration
 
@@ -69,6 +70,8 @@ src/
 │   └── error-handler.ts 404 and centralized error responses
 ├── routes/
 │   └── index.ts         Mounts each module's router
+├── scripts/
+│   └── seed.ts          `npm run seed`: insert / refresh the 1000-product catalog
 ├── utils/
 │   └── errors.ts        HttpError
 └── modules/
